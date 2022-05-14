@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "managedClusters_puntoDosAKS_name": {
+            "value": null
+        },
+        "workspaces_DefaultWorkspace_73a9fb29_521f_4214_bb06_c27202a5e8c1_EAU_externalid": {
+            "value": null
+        },
+        "publicIPAddresses_8f760b1a_abfa_471a_a80f_421d14379ac3_externalid": {
+            "value": null
+        },
+        "userAssignedIdentities_puntoDosAKS_agentpool_externalid": {
+            "value": null
+        }
+    }
+}

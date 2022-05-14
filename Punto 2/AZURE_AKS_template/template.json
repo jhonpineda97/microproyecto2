@@ -1,0 +1,156 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "managedClusters_puntoDosAKS_name": {
+            "defaultValue": "puntoDosAKS",
+            "type": "String"
+        },
+        "workspaces_DefaultWorkspace_73a9fb29_521f_4214_bb06_c27202a5e8c1_EAU_externalid": {
+            "defaultValue": "/subscriptions/73a9fb29-521f-4214-bb06-c27202a5e8c1/resourceGroups/DefaultResourceGroup-EAU/providers/Microsoft.OperationalInsights/workspaces/DefaultWorkspace-73a9fb29-521f-4214-bb06-c27202a5e8c1-EAU",
+            "type": "String"
+        },
+        "publicIPAddresses_8f760b1a_abfa_471a_a80f_421d14379ac3_externalid": {
+            "defaultValue": "/subscriptions/73a9fb29-521f-4214-bb06-c27202a5e8c1/resourceGroups/MC_puntoDosGrupo_puntoDosAKS_eastasia/providers/Microsoft.Network/publicIPAddresses/8f760b1a-abfa-471a-a80f-421d14379ac3",
+            "type": "String"
+        },
+        "userAssignedIdentities_puntoDosAKS_agentpool_externalid": {
+            "defaultValue": "/subscriptions/73a9fb29-521f-4214-bb06-c27202a5e8c1/resourceGroups/MC_puntoDosGrupo_puntoDosAKS_eastasia/providers/Microsoft.ManagedIdentity/userAssignedIdentities/puntoDosAKS-agentpool",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.ContainerService/managedClusters",
+            "apiVersion": "2022-02-02-preview",
+            "name": "[parameters('managedClusters_puntoDosAKS_name')]",
+            "location": "eastasia",
+            "sku": {
+                "name": "Basic",
+                "tier": "Paid"
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "kubernetesVersion": "1.22.6",
+                "dnsPrefix": "[concat(parameters('managedClusters_puntoDosAKS_name'), '-dns')]",
+                "agentPoolProfiles": [
+                    {
+                        "name": "agentpool",
+                        "count": 2,
+                        "vmSize": "Standard_DS2_v2",
+                        "osDiskSizeGB": 128,
+                        "osDiskType": "Managed",
+                        "kubeletDiskType": "OS",
+                        "maxPods": 110,
+                        "type": "VirtualMachineScaleSets",
+                        "availabilityZones": [
+                            "1",
+                            "2",
+                            "3"
+                        ],
+                        "enableAutoScaling": false,
+                        "powerState": {
+                            "code": "Running"
+                        },
+                        "orchestratorVersion": "1.22.6",
+                        "enableNodePublicIP": false,
+                        "mode": "System",
+                        "osType": "Linux",
+                        "osSKU": "Ubuntu",
+                        "enableFIPS": false
+                    }
+                ],
+                "servicePrincipalProfile": {
+                    "clientId": "msi"
+                },
+                "addonProfiles": {
+                    "azureKeyvaultSecretsProvider": {
+                        "enabled": false
+                    },
+                    "azurepolicy": {
+                        "enabled": false
+                    },
+                    "httpApplicationRouting": {
+                        "enabled": false
+                    },
+                    "omsAgent": {
+                        "enabled": true,
+                        "config": {
+                            "logAnalyticsWorkspaceResourceID": "[parameters('workspaces_DefaultWorkspace_73a9fb29_521f_4214_bb06_c27202a5e8c1_EAU_externalid')]"
+                        }
+                    }
+                },
+                "nodeResourceGroup": "[concat('MC_puntoDosGrupo_', parameters('managedClusters_puntoDosAKS_name'), '_eastasia')]",
+                "enableRBAC": true,
+                "networkProfile": {
+                    "networkPlugin": "kubenet",
+                    "loadBalancerSku": "Standard",
+                    "loadBalancerProfile": {
+                        "managedOutboundIPs": {
+                            "count": 1
+                        },
+                        "effectiveOutboundIPs": [
+                            {
+                                "id": "[parameters('publicIPAddresses_8f760b1a_abfa_471a_a80f_421d14379ac3_externalid')]"
+                            }
+                        ]
+                    },
+                    "podCidr": "10.244.0.0/16",
+                    "serviceCidr": "10.0.0.0/16",
+                    "dnsServiceIP": "10.0.0.10",
+                    "dockerBridgeCidr": "172.17.0.1/16",
+                    "outboundType": "loadBalancer"
+                },
+                "apiServerAccessProfile": {
+                    "enablePrivateCluster": false
+                },
+                "identityProfile": {
+                    "kubeletidentity": {
+                        "resourceId": "[parameters('userAssignedIdentities_puntoDosAKS_agentpool_externalid')]",
+                        "clientId": "34878242-feba-4790-a1ec-71fb65e75982",
+                        "objectId": "ee9cc887-d32d-4620-9619-8f26872d1eb3"
+                    }
+                },
+                "securityProfile": {},
+                "oidcIssuerProfile": {
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ContainerService/managedClusters/agentPools",
+            "apiVersion": "2022-02-02-preview",
+            "name": "[concat(parameters('managedClusters_puntoDosAKS_name'), '/agentpool')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('managedClusters_puntoDosAKS_name'))]"
+            ],
+            "properties": {
+                "count": 2,
+                "vmSize": "Standard_DS2_v2",
+                "osDiskSizeGB": 128,
+                "osDiskType": "Managed",
+                "kubeletDiskType": "OS",
+                "maxPods": 110,
+                "type": "VirtualMachineScaleSets",
+                "availabilityZones": [
+                    "1",
+                    "2",
+                    "3"
+                ],
+                "enableAutoScaling": false,
+                "powerState": {
+                    "code": "Running"
+                },
+                "orchestratorVersion": "1.22.6",
+                "enableNodePublicIP": false,
+                "mode": "System",
+                "osType": "Linux",
+                "osSKU": "Ubuntu",
+                "enableFIPS": false
+            }
+        }
+    ]
+}
